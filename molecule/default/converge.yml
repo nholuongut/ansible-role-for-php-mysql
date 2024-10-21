@@ -1,0 +1,25 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+
+  vars:
+    php_enablerepo: "remi,remi-php72"
+
+  pre_tasks:
+    - name: Update apt cache.
+      apt: update_cache=true cache_valid_time=600
+      when: ansible_os_family == 'Debian'
+
+  roles:
+    - role: nholuong.repo-remi
+      when: ansible_os_family == 'RedHat'
+    - role: nholuong.apache
+    - role: nholuong.mysql
+    - role: nholuong.php
+    - role: nholuong.php-mysql
+
+  post_tasks:
+    - name: Make sure the PHP MySQL extension is present.
+      command: "php -i | grep 'mysqlnd => enabled'"
+      changed_when: false
